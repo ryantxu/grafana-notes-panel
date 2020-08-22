@@ -1,0 +1,30 @@
+{
+  "type": "panel",
+  "name": "Trello style notes",
+  "id": "grafana-notes-panel",
+
+  "info": {
+    "description": "Grafana Panel Plugin Template",
+    "author": {
+      "name": "Your Name"
+    },
+    "keywords": ["panel", "template"],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {"name": "Website", "url": "https://github.com/grafana/simple-react-panel"},
+      {"name": "License", "url": "https://github.com/grafana/simple-react-panel/blob/master/LICENSE"}
+    ],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+
+  "dependencies": {
+    "grafanaVersion": "7.2.x",
+    "grafanaDependency": ">7.2.0",
+    "plugins": []
+  }
+}
