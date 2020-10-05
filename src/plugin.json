@@ -1,7 +1,7 @@
 {
   "type": "panel",
   "name": "Trello style notes",
-  "id": "grafana-notes-panel",
+  "id": "ryantxu-board-panel",
 
   "info": {
     "description": "Grafana Panel Plugin Template",

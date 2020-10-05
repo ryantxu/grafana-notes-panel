@@ -1,5 +1,5 @@
 {
-  "name": "grafana-notes-panel",
+  "name": "ryantxu-board-panel",
   "version": "0.0.1",
   "description": "Trello style notes",
   "scripts": {
@@ -9,12 +9,8 @@
     "watch": "grafana-toolkit plugin:dev --watch"
   },
   "repository": "github:grafana/simple-react-panel",
-  "author": "Grafana Labs <team@grafana.com> (https://grafana.com)",
+  "author": "Ryan McKinley",
   "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/grafana/simple-react-panel/issues",
-    "email": "plugins@grafana.com"
-  },
   "devDependencies": {
     "@grafana/data": "canary",
     "@grafana/toolkit": "canary",

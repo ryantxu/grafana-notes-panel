@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react";
-import { PanelProps } from "@grafana/data";
+import { isLiveChannelMessageEvent, isLiveChannelStatusEvent, LiveChannelConnectionState, LiveChannelScope, LiveChannelStatusEvent, PanelProps } from "@grafana/data";
 import { SimpleOptions } from "types";
 import Board from "react-trello";
 import { getGrafanaLiveSrv } from "@grafana/runtime";
@@ -13,6 +13,7 @@ interface State {
   channel?: string;
   boardData: any; //
   loaded: number;
+  status?: LiveChannelStatusEvent;
 }
 
 export class NotesPanel extends PureComponent<Props, State> {
@@ -46,35 +47,59 @@ export class NotesPanel extends PureComponent<Props, State> {
     }
   };
 
-  updateSubscription = () => {
-    const srv = getGrafanaLiveSrv();
-    if (!srv) {
+  getLiveChannel = () => {
+    const live = getGrafanaLiveSrv();
+    if (!live) {
       console.error('Grafana live not running, enable "live" feature toggle');
-      return;
+      return undefined;
     }
+
+    const channel = this.props.options?.source?.channel;
+    if (!channel) {
+      return undefined;
+    }
+
+    return live.getChannel({
+      scope: LiveChannelScope.Grafana,
+      namespace: "broadcast", // holds on to the last value
+      path: `ryantxu/board/${channel}`
+    });
+  };
+
+  updateSubscription = () => {
     if (this.subscription) {
       this.subscription.unsubscribe();
       this.subscription = undefined;
     }
 
-    const channel = this.props.options?.source?.channel;
-    if (!channel) {
-      return;
+    const c = this.getLiveChannel();
+    if (c) {
+      const channel = this.props.options?.source?.channel;
+
+      this.subscription = c.getStream().subscribe({
+        next: (msg) => {
+          console.log("Got msg", msg);
+          if(isLiveChannelMessageEvent(msg)) {
+            this.setState({
+              channel,
+              boardData: msg.message,
+              loaded: Date.now()
+            });
+          }
+          else if(isLiveChannelStatusEvent(msg)) {
+            this.setState({
+              status: msg
+            });
+
+            if(msg.state === LiveChannelConnectionState.Connected) {
+              if(!this.state.boardData) {
+                this.updateBoard(sampleData);
+              }
+            }
+          }
+        }
+      });
     }
-
-    this.subscription = srv.getChannelStream(channel).subscribe({
-      next: (msg: any) => {
-        console.log("Got data!");
-        this.setState({
-          channel,
-          boardData: msg,
-          loaded: Date.now()
-        });
-      }
-    });
-
-    // Fill the channel with sample data first
-    this.updateBoard(sampleData);
   };
 
   updateBoard = (newData: unknown) => {
@@ -82,13 +107,14 @@ export class NotesPanel extends PureComponent<Props, State> {
       return;
     }
 
-    const channel = this.props.options?.source?.channel;
+    const channel = this.getLiveChannel();
     if (!channel) {
       return;
     }
+  //  debugger;
 
     // Send data the the channel
-    getGrafanaLiveSrv().publish(channel, newData);
+    channel.publish!(newData);
   };
 
   //-------------------------------------------
@@ -107,14 +133,11 @@ export class NotesPanel extends PureComponent<Props, State> {
   //-------------------------------------------
 
   render() {
-    const { boardData, channel } = this.state;
-    if (!boardData) {
-      if (!channel) {
-        return <div>No channel defined yet...</div>;
-      }
-      return <div>loading....</div>;
+    const { boardData, status } = this.state;
+    if (!status || !boardData) {
+      return <div>Loading...</div>
     }
-
+   
     const { width, height, options } = this.props;
     const { board } = options;
 
