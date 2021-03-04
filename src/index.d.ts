@@ -1,9 +1,7 @@
 // SEE:
 // https://gist.githubusercontent.com/rlingineni/fc95c05897ffc6d7e78fbbc6255dbaa0/raw/59529d0f2d647dc2e0b0e94583dcf652b6d5c119/react-trello-index.d.ts
 
-declare class ReactTrelloBoard<CardMetaData> extends React.Component<
-  ReactTrello.BoardProps<CardMetaData>
-> {}
+declare class ReactTrelloBoard<CardMetaData> extends React.Component<ReactTrello.BoardProps<CardMetaData>> {}
 
 declare module ReactTrello {
   /**
@@ -104,11 +102,7 @@ declare module ReactTrello {
     /**
      * Called when a card is clicked: onCardClick(cardId, metadata, laneId)
      */
-    onCardClick?: (
-      cardId: string,
-      metaData: CardMetaData,
-      laneId: string
-    ) => void;
+    onCardClick?: (cardId: string, metaData: CardMetaData, laneId: string) => void;
     /**
      * Called when a new card is added: onCardAdd(card, laneId)
      */
@@ -190,6 +184,6 @@ declare module ReactTrello {
   }
 }
 
-declare module "react-trello" {
+declare module 'react-trello' {
   export default ReactTrelloBoard;
 }

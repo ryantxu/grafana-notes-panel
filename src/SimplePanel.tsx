@@ -1,25 +1,29 @@
-import React, { PureComponent } from "react";
-import { isLiveChannelMessageEvent, isLiveChannelStatusEvent, LiveChannelConnectionState, LiveChannelScope, LiveChannelStatusEvent, PanelProps } from "@grafana/data";
-import { SimpleOptions } from "types";
-import Board from "react-trello";
-import { getGrafanaLiveSrv } from "@grafana/runtime";
-import { Unsubscribable } from "rxjs";
+import React, { PureComponent } from 'react';
+import {
+  isLiveChannelMessageEvent,
+  isLiveChannelStatusEvent,
+  LiveChannelScope,
+  LiveChannelStatusEvent,
+  PanelProps,
+} from '@grafana/data';
+import { Button } from '@grafana/ui';
+import { SimpleOptions } from 'types';
+import Board from 'react-trello';
+import { getGrafanaLiveSrv } from '@grafana/runtime';
+import { Unsubscribable } from 'rxjs';
 
 interface Props extends PanelProps<SimpleOptions> {}
 
-import { sampleData } from "./samples";
+import { sampleData } from './samples';
 
 interface State {
   channel?: string;
-  boardData: any; //
-  loaded: number;
+  boardData?: any;
   status?: LiveChannelStatusEvent;
 }
 
 export class NotesPanel extends PureComponent<Props, State> {
-  state = {
-    loaded: 0
-  } as State;
+  state = {} as State;
 
   subscription?: Unsubscribable;
 
@@ -28,7 +32,7 @@ export class NotesPanel extends PureComponent<Props, State> {
   //-------------------------------------------
 
   componentDidMount = () => {
-    console.log("MOUNT!");
+    console.log('MOUNT!');
     this.updateSubscription();
   };
 
@@ -42,7 +46,7 @@ export class NotesPanel extends PureComponent<Props, State> {
   componentDidUpdate = (oldProps: Props) => {
     const channel = this.props.options?.source?.channel;
     if (oldProps.options?.source?.channel !== channel) {
-      console.log("Channel changed!");
+      console.log('Channel changed!');
       this.updateSubscription();
     }
   };
@@ -61,8 +65,8 @@ export class NotesPanel extends PureComponent<Props, State> {
 
     return live.getChannel({
       scope: LiveChannelScope.Grafana,
-      namespace: "broadcast", // holds on to the last value
-      path: `ryantxu/board/${channel}`
+      namespace: 'broadcast', // holds on to the last value
+      path: `ryantxu/board/${channel}`,
     });
   };
 
@@ -78,26 +82,18 @@ export class NotesPanel extends PureComponent<Props, State> {
 
       this.subscription = c.getStream().subscribe({
         next: (msg) => {
-          console.log("Got msg", msg);
-          if(isLiveChannelMessageEvent(msg)) {
+          console.log('Got msg', msg);
+          if (isLiveChannelMessageEvent(msg)) {
             this.setState({
               channel,
               boardData: msg.message,
-              loaded: Date.now()
             });
-          }
-          else if(isLiveChannelStatusEvent(msg)) {
+          } else if (isLiveChannelStatusEvent(msg)) {
             this.setState({
-              status: msg
+              status: msg,
             });
-
-            if(msg.state === LiveChannelConnectionState.Connected) {
-              if(!this.state.boardData) {
-                this.updateBoard(sampleData);
-              }
-            }
           }
-        }
+        },
       });
     }
   };
@@ -111,7 +107,7 @@ export class NotesPanel extends PureComponent<Props, State> {
     if (!channel) {
       return;
     }
-  //  debugger;
+    //  debugger;
 
     // Send data the the channel
     channel.publish!(newData);
@@ -125,7 +121,11 @@ export class NotesPanel extends PureComponent<Props, State> {
   // };
 
   onCardClick = (card: any) => {
-    console.log("onCardClick", card);
+    console.log('onCardClick', card);
+  };
+
+  onAddSample = () => {
+    this.updateBoard(sampleData);
   };
 
   //-------------------------------------------
@@ -134,20 +134,27 @@ export class NotesPanel extends PureComponent<Props, State> {
 
   render() {
     const { boardData, status } = this.state;
-    if (!status || !boardData) {
-      return <div>Loading...</div>
+    if (!status) {
+      return <div>Loading...</div>;
     }
-   
+    if (!boardData || !Object.keys(boardData).length) {
+      return (
+        <div>
+          <Button onClick={this.onAddSample}>Add Sample</Button>
+        </div>
+      );
+    }
+
     const { width, height, options } = this.props;
     const { board } = options;
 
     const czz = {
       height: `${height}px`,
       width: `${width}px`,
-      overflow: "auto",
-      backgroundColor: "transparent",
-      padding: "0px",
-      margin: "0px"
+      overflow: 'auto',
+      backgroundColor: 'transparent',
+      padding: '0px',
+      margin: '0px',
     };
 
     return (
