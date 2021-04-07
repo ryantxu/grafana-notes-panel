@@ -14,8 +14,7 @@
     "@grafana/data": "latest",
     "@grafana/runtime": "latest",
     "@grafana/ui": "latest",
-    "@grafana/toolkit": "latest",
-    "emotion": "10.0.27"
+    "@grafana/toolkit": "latest"
   },
   "dependencies": {
     "react-trello": "^2.2.8",
