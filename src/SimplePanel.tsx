@@ -89,9 +89,14 @@ export class NotesPanel extends PureComponent<Props, State> {
               boardData: msg.message,
             });
           } else if (isLiveChannelStatusEvent(msg)) {
-            this.setState({
+            const update: Partial<State> = {
+              channel,
               status: msg,
-            });
+            };
+            if (msg.message) {
+              update.boardData = msg.message;
+            }
+            this.setState(update);
           }
         },
       });

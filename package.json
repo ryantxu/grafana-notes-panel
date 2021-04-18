@@ -11,10 +11,10 @@
   "author": "Ryan McKinley",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@grafana/data": "latest",
-    "@grafana/runtime": "latest",
-    "@grafana/ui": "latest",
-    "@grafana/toolkit": "latest"
+    "@grafana/data": "canary",
+    "@grafana/runtime": "canary",
+    "@grafana/ui": "canary",
+    "@grafana/toolkit": "canary"
   },
   "dependencies": {
     "react-trello": "^2.2.8",
