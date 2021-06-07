@@ -17,7 +17,6 @@ interface Props extends PanelProps<SimpleOptions> {}
 import { sampleData } from './samples';
 
 interface State {
-  channel?: string;
   boardData?: any;
   status?: LiveChannelStatusEvent;
 }
@@ -51,6 +50,19 @@ export class NotesPanel extends PureComponent<Props, State> {
     }
   };
 
+  getLiveAddr = () => {
+    const channel = this.props.options?.source?.channel;
+    if (!channel) {
+      return undefined;
+    }
+
+    return {
+      scope: LiveChannelScope.Grafana,
+      namespace: 'broadcast', // holds on to the last value
+      path: `ryantxu/board/${channel}`,
+    };
+  };
+
   getLiveChannel = () => {
     const live = getGrafanaLiveSrv();
     if (!live) {
@@ -58,16 +70,11 @@ export class NotesPanel extends PureComponent<Props, State> {
       return undefined;
     }
 
-    const channel = this.props.options?.source?.channel;
-    if (!channel) {
+    const addr = this.getLiveAddr();
+    if (!addr) {
       return undefined;
     }
-
-    return live.getChannel({
-      scope: LiveChannelScope.Grafana,
-      namespace: 'broadcast', // holds on to the last value
-      path: `ryantxu/board/${channel}`,
-    });
+    return live.getStream(addr);
   };
 
   updateSubscription = () => {
@@ -78,19 +85,16 @@ export class NotesPanel extends PureComponent<Props, State> {
 
     const c = this.getLiveChannel();
     if (c) {
-      const channel = this.props.options?.source?.channel;
-
-      this.subscription = c.getStream().subscribe({
+      console.log('SUBSCRIBE', c);
+      this.subscription = c.subscribe({
         next: (msg) => {
           console.log('Got msg', msg);
           if (isLiveChannelMessageEvent(msg)) {
             this.setState({
-              channel,
               boardData: msg.message,
             });
           } else if (isLiveChannelStatusEvent(msg)) {
             const update: Partial<State> = {
-              channel,
               status: msg,
             };
             if (msg.message) {
@@ -103,19 +107,20 @@ export class NotesPanel extends PureComponent<Props, State> {
     }
   };
 
-  updateBoard = (newData: unknown) => {
-    if (!newData) {
+  updateBoard = (data: any) => {
+    if (!data) {
       return;
     }
 
-    const channel = this.getLiveChannel();
-    if (!channel) {
+    const live = getGrafanaLiveSrv();
+    const addr = this.getLiveAddr();
+    if (!addr || !live) {
       return;
     }
-    //  debugger;
 
-    // Send data the the channel
-    channel.publish!(newData);
+    live.publish(addr, data).then((v) => {
+      console.log('GOT', v);
+    });
   };
 
   //-------------------------------------------
@@ -130,7 +135,9 @@ export class NotesPanel extends PureComponent<Props, State> {
   };
 
   onAddSample = () => {
-    this.updateBoard(sampleData);
+    const copy = sampleData;
+    copy.lanes[0].label = `NOW: ${Date.now()}`;
+    this.updateBoard(copy);
   };
 
   //-------------------------------------------
